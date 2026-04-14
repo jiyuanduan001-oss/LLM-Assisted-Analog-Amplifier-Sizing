@@ -1,0 +1,21 @@
+.subckt {{netlist_name}} gnda vdda vinn vinp vout Ib Vbias_cas_p
+* PMOS cascode mirror — main row (Sooch wide-swing)
+XM1 net_int_ref  net1        vdda         vdda sky130_fd_pr__pfet_01v8 l={{ M1_L }} w={{ M1_W }} m={{ M1_M }}
+XM2 net_int_out  net1        vdda         vdda sky130_fd_pr__pfet_01v8 l={{ M1_L }} w={{ M1_W }} m={{ M1_M }}
+* PMOS cascode mirror — cascode row
+XM9  net1  Vbias_cas_p net_int_ref  vdda sky130_fd_pr__pfet_01v8 l={{ M9_L }} w={{ M9_W }} m={{ M9_M }}
+XM10 net5  Vbias_cas_p net_int_out  vdda sky130_fd_pr__pfet_01v8 l={{ M9_L }} w={{ M9_W }} m={{ M9_M }}
+* NMOS diff pair
+XM3 net1  vinn net2 gnda sky130_fd_pr__nfet_01v8 l={{ M3_L }} w={{ M3_W }} m={{ M3_M }}
+XM4 net5  vinp net2 gnda sky130_fd_pr__nfet_01v8 l={{ M3_L }} w={{ M3_W }} m={{ M3_M }}
+* Tail current source + bias reference
+XM5 net3  net3 gnda gnda sky130_fd_pr__nfet_01v8 l={{ M5_L }} w={{ M5_W }} m={{ M5_M }}
+XM6 net2  net3 gnda gnda sky130_fd_pr__nfet_01v8 l={{ M5_L }} w={{ M5_W }} m={{ M6_M }}
+* Second stage — PMOS CS amplifier + NMOS current source
+XM7 vout  net5 vdda vdda sky130_fd_pr__pfet_01v8 l={{ M7_L }} w={{ M7_W }} m={{ M7_M }}
+XM8 vout  net3 gnda gnda sky130_fd_pr__nfet_01v8 l={{ M5_L }} w={{ M5_W }} m={{ M8_M }}
+* Miller compensation
+R_Rc net5 net_rc {{ Rc_value }}
+C_C1 net_rc vout {{ C1_value }}
+I0  vdda  net3 Ib
+.ends {{netlist_name}}

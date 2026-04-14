@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.nfs*
+traces/
+memory/
+CLAUDE.md
+*.log
+output/
