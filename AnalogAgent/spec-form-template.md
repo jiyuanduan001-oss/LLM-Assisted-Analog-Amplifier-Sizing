@@ -1,26 +1,26 @@
-# Design Spec Form
+# Design Spec Form — 5T OTA (SKY130)
 
 ## Required (sizing will not proceed without these)
 VDD          : 1.8         # Supply voltage (V)
 CL           : 5e-12       # Load capacitance (F)
-Gain         : 70          # DC gain target (dB)
+Gain         : 40          # DC gain target (dB)
 GBW          : 50e6        # Gain-bandwidth product (Hz)
-PM           : 50          # Phase margin (degrees)
+PM           : 60          # Phase margin (degrees)
 
 ## Environment (recommended — defaults applied if blank)
-Temperature  : 20          # °C  (default: 27)
+Temperature  : 20          # C  (default: 27)
 Corner       : ff          # tt, ff, ss, fs, sf  (default: tt)
 
 ## Optional (leave blank to skip — will not be optimized)
 Power        : 500e-6      # Max power (W)
-SR+          : 20           # Positive slew rate (V/µs)
-SR-          :             # Negative slew rate (V/µs)
-CMRR         : 60          # (dB)
-PSRR+        : 60          # Positive PSRR (dB)
-PSRR-        : 60          # Negative PSRR (dB)
-IRN          : 30e-6       # Integrated input-referred noise (V rms)
+SR+          :             # Positive slew rate (V/us)
+SR-          :             # Negative slew rate (V/us)
+CMRR         : 60            # (dB)
+PSRR+        : 50            # Positive PSRR (dB)
+PSRR-        : 50            # Negative PSRR (dB)
+IRN          :             # Integrated input-referred noise (V rms)
 ORN          :             # Integrated output-referred noise (V rms)
-Output_swing : 1.2            # (V)
+Output_swing :             # (V)
 I_bias       : 10e-6       # External bias current (A)
 
 ## Mismatch (leave blank to skip — saves significant runtime)
@@ -31,17 +31,17 @@ I_bias       : 10e-6       # External bias current (A)
 # from the iteration loop and optimization constraints.
 #
 # When a number is provided, mismatch becomes an active design target.
-# The sizing flow will run Monte Carlo each iteration, check the 3σ offset
+# The sizing flow will run Monte Carlo each iteration, check the 3-sigma offset
 # against the target, and include it in root-cause diagnosis if it fails.
-# Diagnosis focuses on two fixes: (1) increase W×L (transistor area),
+# Diagnosis focuses on two fixes: (1) increase WxL (transistor area),
 # (2) reduce |Vdsat| (push toward weaker inversion).
 #
-Mismatch     :        # 3σ mismatch offset (V) — Monte Carlo, 50 runs
+Mismatch     :             # 3-sigma mismatch offset (V) — Monte Carlo, 50 runs
                             #   Leave BLANK to skip mismatch entirely
 
 ## Post-Sizing Options
 Extreme_PVT  : yes          # yes/no — run additional sims at extreme corners
-                            #   after sizing converges (SS/85°C + FF/−40°C)
+                            #   after sizing converges (SS/85C + FF/-40C)
 Optimize     : no          # yes/no — run numerical optimization after sizing
                             #   converges. After the LLM sizing stage, the system
                             #   will ask which metric to prioritize: Power, Gain,

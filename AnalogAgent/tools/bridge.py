@@ -9,7 +9,7 @@ Responsibilities:
   5. simulate_circuit()        -- convenience wrapper around api_client.simulate()
 
 ROLE_DEVICE_MAP is topology-specific. The default below is for a 5T OTA
-(SKILL.md Netlist Role Mapping: M1/M2=DIFF_PAIR, M5/M6=LOAD, M3=TAIL, M4=BIAS_REF).
+(SKILL.md Netlist Role Mapping: M1/M2=DIFF_PAIR, M5/M6=LOAD, M3=TAIL, M4=BIAS_GEN).
 If using a different circuit (e.g. tsm with M1-M8), update ROLE_DEVICE_MAP
 or pass a custom map.
 
@@ -21,6 +21,7 @@ Cgg = |cgs_m1| + |cgd_m1|  ->  extracted and stored in TransistorOP.cgg
 
 import dataclasses
 import math
+import re
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -106,7 +107,7 @@ ROLE_DEVICE_MAP: dict[str, dict] = {
         "mirrors":     [],
         "device_type": "nfet",
     },
-    "BIAS_REF": {
+    "BIAS_GEN": {
         "primary":     "M4",
         "mirrors":     [],
         "device_type": "nfet",
@@ -184,7 +185,7 @@ def role_target_to_params(
     if L_um is None or id_a is None:
         return {}
 
-    # BIAS_REF (M4): diode-connected, no independent gm/Id target.
+    # BIAS_GEN (M4): diode-connected, no independent gm/Id target.
     # Use the L from sizing and match WL_ratio to TAIL if gm_id == 0.
     if gm_id is None or gm_id == 0:
         # Default WL_ratio = 2.8 (5tota minimum) -- toolchain will handle current
@@ -256,15 +257,15 @@ def sizing_result_to_params(
             target = dataclasses.replace(target, L_guidance_um=l_overrides[role])
         params.update(role_target_to_params(role, target))
 
-    # TAIL (M3) + BIAS_REF (M4): size as a current mirror pair.
+    # TAIL (M3) + BIAS_GEN (M4): size as a current mirror pair.
     # M3 and M4 must share identical per-finger W/L so that the mirrored VGS
     # maps to the correct I_tail.  The ratio is implemented via M (finger count).
     tail   = sizing_result.roles.get("TAIL")
-    bias   = sizing_result.roles.get("BIAS_REF")
+    bias   = sizing_result.roles.get("BIAS_GEN")
     if tail and bias and tail.id_derived and bias.id_derived:
         L_um = tail.L_guidance_um or 1.0
         if l_overrides:
-            L_um = l_overrides.get("TAIL", l_overrides.get("BIAS_REF", L_um))
+            L_um = l_overrides.get("TAIL", l_overrides.get("BIAS_GEN", L_um))
 
         gm_id  = tail.gm_id_target or 11.0
         id_ref = bias.id_derived    # Ib  -- unit cell current (M4 carries this)
@@ -296,7 +297,7 @@ def sizing_result_to_params(
             "M3_M":        M3,
         })
     elif tail:
-        # Fallback: process individually if BIAS_REF missing
+        # Fallback: process individually if BIAS_GEN missing
         target = tail
         if l_overrides and "TAIL" in l_overrides:
             target = dataclasses.replace(target, L_guidance_um=l_overrides["TAIL"])
@@ -377,8 +378,10 @@ def parse_response(response: dict) -> dict[str, TransistorOP]:
     transistors: dict[str, TransistorOP] = {}
 
     for dev_lower, data in op_region.items():
-        # Skip capacitors (C*) and resistors
-        if dev_lower.startswith("c") or dev_lower.startswith("r"):
+        # Only accept actual MOSFET names (m followed by a digit, e.g. m1, m3)
+        # Skip measurement artifacts (gain, peaking_db, gbw, etc.) that leak
+        # through _format_op_region when spec keys contain underscores.
+        if not re.match(r'^m\d', dev_lower):
             continue
 
         name = dev_lower.upper()   # m1 -> M1

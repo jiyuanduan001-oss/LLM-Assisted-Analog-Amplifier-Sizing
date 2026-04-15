@@ -33,6 +33,8 @@ def _role_to_params(
     prefix: str,
     device_type: str,
     target: RoleTarget,
+    corner: str = "tt",
+    temp: str = "25C",
 ) -> dict:
     """
     Convert one role's RoleTarget to CircuitCollector params for a single device.
@@ -41,6 +43,13 @@ def _role_to_params(
         prefix:      Device prefix, e.g. "M3"
         device_type: "nfet" or "pfet"
         target:      RoleTarget with sizing targets
+        corner:      Process corner for the LUT query (default "tt")
+        temp:        Temperature string for the LUT query, e.g. "27C"
+                     (default "25C"). Must match the temperature at which
+                     the circuit will be simulated — otherwise the LUT-
+                     derived W bakes in temperature coefficients that do
+                     not match the SPICE run and the OP point lands in
+                     the wrong inversion region.
 
     Returns:
         e.g. {"M3_L": 0.5, "M3_WL_ratio": 5.0, "M3_M": 1}
@@ -62,9 +71,12 @@ def _role_to_params(
             f"{prefix}_M":        1,
         }
 
-    # Compute W from LUT
+    # Compute W from LUT at the user-specified corner/temp.
     try:
-        id_w_ua_um = lut_query(device_type, "id_w", L_um, gm_id_val=gm_id)
+        id_w_ua_um = lut_query(
+            device_type, "id_w", L_um,
+            corner=corner, temp=temp, gm_id_val=gm_id,
+        )
         W_um = id_a * 1e6 / id_w_ua_um
         WL_ratio = W_um / L_um
     except (FileNotFoundError, ValueError):
@@ -123,6 +135,8 @@ def sizing_result_to_params(
     Rc_ohm: Optional[float] = None,
     passive_params: Optional[list[str]] = None,
     l_overrides: Optional[dict[str, float]] = None,
+    corner: str = "tt",
+    temp: str = "25C",
 ) -> dict:
     """
     Convert a dict of RoleTargets to a flat CircuitCollector params dict.
@@ -138,6 +152,11 @@ def sizing_result_to_params(
         Rc_ohm:           Nulling resistor in Ohms (optional)
         passive_params:   List of passive param names from netlist (e.g. ["C1_value", "Rc_value"])
         l_overrides:      Optional {role: L_um} overrides
+        corner:           Process corner for LUT queries (default "tt").
+        temp:             Temperature string for LUT queries, e.g. "27C"
+                          (default "25C"). Should match the temperature
+                          at which the circuit will be simulated, so that
+                          the LUT-derived W and the SPICE OP point agree.
 
     Returns:
         Flat params dict for CircuitCollector
@@ -158,7 +177,8 @@ def sizing_result_to_params(
                 target = dataclasses.replace(target, L_guidance_um=l_overrides[role])
             mapping = role_device_map[role]
             params.update(_role_to_params(
-                mapping["primary"], mapping["device_type"], target
+                mapping["primary"], mapping["device_type"], target,
+                corner=corner, temp=temp,
             ))
         else:
             # Mirror group: first role is reference, others scale M
@@ -180,7 +200,10 @@ def sizing_result_to_params(
             id_ref = ref_target.id_derived
 
             try:
-                id_w = lut_query(device_type, "id_w", L_um, gm_id_val=gm_id_ref)
+                id_w = lut_query(
+                    device_type, "id_w", L_um,
+                    corner=corner, temp=temp, gm_id_val=gm_id_ref,
+                )
                 W_unit = id_ref * 1e6 / id_w
                 WL_unit = W_unit / L_um
             except (FileNotFoundError, ValueError):

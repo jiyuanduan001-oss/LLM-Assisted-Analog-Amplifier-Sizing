@@ -1,7 +1,7 @@
 * 5T OTA — single-transistor PMOS current-mirror load (classic).
 *   LOAD sub-block: { M5 (mirror-driven), M6 (diode-connected) }.
 *   Matched pairs:    M1 == M2 (diff pair), M5 == M6 (load mirror).
-*   Mirror group:     M3 (TAIL) mirrors M4 (BIAS_REF).
+*   Mirror group:     M3 (TAIL) mirrors M4 (BIAS_GEN).
 *   Headroom:         output_max ≈ VDD − vdsat_M5 (one vdsat penalty).
 .subckt 5tota_single gnda vdda vinn vinp vout Ib
 * NMOS diff pair

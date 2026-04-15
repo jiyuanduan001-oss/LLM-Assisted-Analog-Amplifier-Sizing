@@ -193,13 +193,13 @@ If `A0 < A0_target`: the design needs more gain. Options:
 - Increase L_cas (longer cascode → larger gm_gds_cas → smaller gds_eq_LOAD)
   but verify `p_int_LOAD > 3 × ω_c` still holds.
 
-### Step 3 — Initial sizing: TAIL (M3) and BIAS_REF (M4)
+### Step 3 — Initial sizing: TAIL (M3) and BIAS_GEN (M4)
 
 ID3 = I_tail (already known from Step 1).
 
 **3a. Determine multiplier ratio first:**
 
-M4 (BIAS_REF) is the unit cell with M4_M = 1. M3 (TAIL) uses multiple
+M4 (BIAS_GEN) is the unit cell with M4_M = 1. M3 (TAIL) uses multiple
 parallel fingers to set the current ratio:
 
 ```
@@ -240,7 +240,7 @@ Cgd3 = Cgd_finger × M3_M
 Cdb3 = Cdb_finger × M3_M
 ```
 
-**3e. BIAS_REF (M4):**
+**3e. BIAS_GEN (M4):**
 
 M4 shares the same W and L as M3 (single finger = unit cell):
 ```
@@ -373,7 +373,7 @@ Call `convert_sizing` and `simulate_circuit`:
 Step 3 works with per-finger parameters for LUT queries, but `convert_sizing`
 needs the total current to compute mirror ratios.  Specifically:
 - `TAIL.id_derived = I_tail` (total tail current, e.g. 40 µA), **NOT** `I_bias`
-- `BIAS_REF.id_derived = I_bias` (reference current, e.g. 5 µA)
+- `BIAS_GEN.id_derived = I_bias` (reference current, e.g. 5 µA)
 The bridge computes `M3_M = round(I_tail / I_bias)` from the ratio.
 Passing `I_bias` for both produces `M3_M = 1` → 5× current deficit.
 
@@ -386,13 +386,13 @@ result = convert_sizing(
         "DIFF_PAIR": {"gm_id_target": (gm/ID)_1, "L_guidance_um": L1, "id_derived": ID1},
         "LOAD":      {"gm_id_target": (gm/ID)_5, "L_guidance_um": L5, "id_derived": ID5},
         "TAIL":      {"gm_id_target": (gm/ID)_3, "L_guidance_um": L3, "id_derived": ID3},  # ID3 = I_tail, NOT I_bias
-        "BIAS_REF":  {"gm_id_target": 0,          "L_guidance_um": L3, "id_derived": I_bias},
+        "BIAS_GEN":  {"gm_id_target": 0,          "L_guidance_um": L3, "id_derived": I_bias},
         # Cascode companions (only if sub_block_type != "single" for the parent role):
         # "LOAD_CAS":  {"gm_id_target": (gm/ID)_cas, "L_guidance_um": L_cas, "id_derived": ID5},
         # "TAIL_CAS":  {"gm_id_target": (gm/ID)_tcas, "L_guidance_um": L_tcas, "id_derived": I_tail},
     },
     Ib_a=I_bias,
-    l_overrides={"DIFF_PAIR": L1, "LOAD": L5, "TAIL": L3, "BIAS_REF": L3},
+    l_overrides={"DIFF_PAIR": L1, "LOAD": L5, "TAIL": L3, "BIAS_GEN": L3},
 )
 
 sim = simulate_circuit(

@@ -95,7 +95,8 @@ User provides netlist + filled spec form
         │ (success or timeout)
         ▼
 ┌─[6] DESIGN REVIEW ───────────────────────────────────────────┐
-│  Read: general/flow/design-review.md                           │
+│  Read: general/flow/design-review.md  (format is STRICT — do  │
+│    not rename/add/merge sections; fill the verbatim template)  │
 │  Output: Sections 1–4 (always)                                 │
 │  IF Extreme_PVT = yes:                                         │
 │    Run sim at SS/85°C and FF/−40°C with LLM params             │

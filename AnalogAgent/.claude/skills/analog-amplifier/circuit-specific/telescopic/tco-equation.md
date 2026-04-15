@@ -20,7 +20,7 @@ for the sizing flow — not abstract frameworks.
 | PSRR             | §F     | PSRR from supply-to-output paths  | PCAS, TAIL            |
 | Output swing     | §G     | Vdsat constraints per stacked device| All (4 stacked)       |
 | CM input range   | §G     | ICMR from saturation constraints  | DIFF_PAIR, TAIL, PCAS |
-| Bias currents    | (top)  | Mirror ratios from I_bias         | TAIL, BIAS_REF        |
+| Bias currents    | (top)  | Mirror ratios from I_bias         | TAIL, BIAS_GEN        |
 | Power            | (top)  | P = VDD × I_tail                  | TAIL                  |
 | Parasitic caps   | §H     | Cgs, Cgd, Cdb formulas           | All (for pole calc)   |
 
@@ -60,7 +60,7 @@ Roles:
   PCAS         : M7a, M7b  (PMOS cascode devices)
   TAIL         : M9        (NMOS tail current source)
   NLOAD        : M11a, M11b (NMOS current source, for alternative topology)
-  BIAS_REF     : Bias generation circuit (provides Vbp, Vbp_cas, Vbn, Vbn_cas)
+  BIAS_GEN     : Bias generation circuit (provides Vbp, Vbp_cas, Vbn, Vbn_cas)
   CMFB         : Common-mode feedback circuit (sets output CM level)
 ```
 

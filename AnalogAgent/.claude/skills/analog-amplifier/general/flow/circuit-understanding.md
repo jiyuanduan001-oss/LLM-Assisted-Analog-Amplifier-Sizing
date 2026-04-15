@@ -197,8 +197,15 @@ the **netlist.j2** that CircuitCollector will use for simulation.
    - If already parameterized (e.g., `{{ C1_value }}`), keep as-is.
    - If the netlist uses a named passive like `Rc`, use `{{ Rc_value }}`.
 
-4. **Bias current source**: Must use `Ib` as the current value.
-   - `I0 vdda net3 Ib`
+4. **Bias current source and `Ib` port**:
+   The testbench creates an external current *sink* at the `Ib` port
+   (`Ib Ib vss DC='IBIAS'` — current flows FROM Ib TO vss). The `Ib`
+   port is NOT a current source into the circuit. The subcircuit must
+   keep its own internal current source from vdda to the bias node.
+   - Quote the parameter reference for ngspice HSA compatibility:
+     `I0 vdda <bias_node> 'IBIAS'`
+   - Tie the `Ib` port to ground with a dummy resistor to prevent a
+     floating node: `Rdum_Ib Ib gnda 1`
 
 5. **Preserve topology**: Do NOT change device connections, node names,
    or circuit structure. Only parameterize the sizing values.

@@ -130,6 +130,54 @@ def _load_processed_file(fpath: Path) -> pd.DataFrame:
     )
 
 
+def _trim_to_strong_inversion(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Drop the sub-threshold branch so gm_id is monotonic across the table.
+
+    Raw processed LUTs sweep VGS across the full range. gm/Id is not
+    monotonic in VGS: it rises from a low value in strong inversion
+    toward a peak (~25–30 S/A) at the onset of weak inversion, then
+    falls again as the device enters deep sub-threshold. The two sides
+    of the peak are therefore two physical branches sharing the same
+    gm/Id axis:
+
+      * strong-inversion side — large Id/W (usable for sizing)
+      * sub-threshold side    — Id/W → 0       (unusable, but present
+                                                 in the raw table)
+
+    np.interp on the full table silently lands on whichever side happens
+    to bracket the query. For the SKY130 25 °C NFET at gm/Id = 13 the
+    sub-threshold row (Id/W ≈ 6e-7) bracketed the query and the lookup
+    returned Id/W ≈ 0.18 A/m instead of the physically-correct
+    ≈ 0.80 A/m — a ~4.6× sizing error.
+
+    This function locates the peak and returns only the strong-inversion
+    branch. Which side of the peak that is depends on the sweep
+    direction (NFET sweeps VGS 0→+, PFET sweeps VGS −→0), so we pick
+    the half whose far end has the larger Id/W — that is the physical
+    strong-inversion branch regardless of polarity.
+    """
+    if df.empty or "gm_id" not in df.columns or "id_w" not in df.columns:
+        return df
+
+    peak_idx = int(df["gm_id"].idxmax())
+    if peak_idx == 0 or peak_idx == len(df) - 1:
+        # Table already monotonic in gm_id (no sub-threshold branch present).
+        return df.reset_index(drop=True)
+
+    left  = df.iloc[: peak_idx + 1]   # includes peak
+    right = df.iloc[peak_idx:]        # includes peak
+
+    # The strong-inversion branch is the side whose far endpoint has
+    # larger Id/W. Using the endpoints (not means) keeps the rule
+    # robust to sub-threshold tails that may contain near-zero rows.
+    left_far_idw  = abs(left["id_w"].iloc[0])
+    right_far_idw = abs(right["id_w"].iloc[-1])
+
+    chosen = right if right_far_idw >= left_far_idw else left
+    return chosen.reset_index(drop=True)
+
+
 def _interpolate_lut(
     device: str,
     l_nm: int,
@@ -163,6 +211,14 @@ def _interpolate_lut(
 
     df_lo = _load_processed_file(f_lo)
     df_hi = _load_processed_file(f_hi)
+
+    # Trim each source to its strong-inversion branch before row-wise blending.
+    # The sub-threshold tail varies strongly with temperature and contains a
+    # non-monotonic gm_id axis — blending it row-by-row produces garbage.
+    # Trimming first aligns both tables at their gm_id peak, so row-index
+    # blending mixes comparable operating points.
+    df_lo = _trim_to_strong_inversion(df_lo)
+    df_hi = _trim_to_strong_inversion(df_hi)
 
     # Align to the shorter table (same VGS sweep expected)
     n = min(len(df_lo), len(df_hi))
@@ -206,14 +262,17 @@ def load_lut(
     fname = directory / f"gmid_{canonical}_L{l_nm}n.txt"
 
     if fname.exists():
-        # Exact temperature file found — load directly
-        return pd.read_csv(
+        # Exact temperature file found — load directly, then drop the
+        # sub-threshold branch so gm_id is monotonic (see
+        # _trim_to_strong_inversion for the full rationale).
+        df = pd.read_csv(
             fname,
             sep=r"\s+",
             comment="#",
             header=None,
             names=_RAW_COLUMNS,
         )
+        return _trim_to_strong_inversion(df)
 
     # --- Auto-interpolation fallback ---
     target_c = _parse_temp(temp)

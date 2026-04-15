@@ -47,6 +47,8 @@ def convert_sizing(
     Cc_f: Optional[float] = None,
     Rc_ohm: Optional[float] = None,
     l_overrides: Optional[dict[str, float]] = None,
+    corner: str = "tt",
+    temp: str = "25C",
 ) -> dict:
     """
     Convert per-role sizing targets into a CircuitCollector params dict.
@@ -58,6 +60,13 @@ def convert_sizing(
         Cc_f:        Compensation capacitor in Farads (required for some topologies).
         Rc_ohm:      Nulling resistor in Ohms (twostage only; = 1/gm7).
         l_overrides: Optional per-role L (µm) overrides.
+        corner:      Process corner for LUT queries (default "tt"). Must
+                     match the corner used for the subsequent SPICE run.
+        temp:        Temperature string for LUT queries, e.g. "27C"
+                     (default "25C"). Must match the SPICE temperature,
+                     otherwise the LUT-derived W targets a different
+                     temperature than the simulator and the OP point
+                     lands in the wrong inversion region.
 
     Returns:
         {"status": "ok", "params": {...}, "config_path": "..."}
@@ -104,6 +113,8 @@ def convert_sizing(
             Rc_ohm=Rc_ohm,
             passive_params=info.get("passive_params"),
             l_overrides=l_overrides,
+            corner=corner,
+            temp=temp,
         )
 
         return {

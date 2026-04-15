@@ -173,7 +173,7 @@ TOOL_DEFINITIONS = [
             "This translates gm/Id-space decisions (gm_id, L, Id per role) into "
             "the W/L ratio, finger count, and device params that CircuitCollector expects. "
             "Supports two topologies:\n"
-            "  - '5t_ota': 4 roles (DIFF_PAIR, LOAD, TAIL, BIAS_REF) → 5tota\n"
+            "  - '5t_ota': 4 roles (DIFF_PAIR, LOAD, TAIL, BIAS_GEN) → 5tota\n"
             "  - 'twostage': 6 roles (DIFF_PAIR, LOAD, BIAS_GEN, TAIL, OUTPUT_CS, OUTPUT_BIAS) → tsm\n"
             "Each role needs: gm_id_target (S/A), L_guidance_um (µm), id_derived (A). "
             "The tool uses LUT data to compute W from (gm_id, L, Id), then applies "
@@ -195,7 +195,7 @@ TOOL_DEFINITIONS = [
                         '{"DIFF_PAIR": {"gm_id_target": 12.0, "L_guidance_um": 1.0, "id_derived": 5e-5}, '
                         '"LOAD": {"gm_id_target": 12.0, "L_guidance_um": 1.0, "id_derived": 5e-5}, '
                         '"TAIL": {"gm_id_target": 11.0, "L_guidance_um": 1.0, "id_derived": 1e-4}, '
-                        '"BIAS_REF": {"gm_id_target": 0, "L_guidance_um": 1.0, "id_derived": 1e-5}}'
+                        '"BIAS_GEN": {"gm_id_target": 0, "L_guidance_um": 1.0, "id_derived": 1e-5}}'
                     ),
                 },
                 "Ib_a": {

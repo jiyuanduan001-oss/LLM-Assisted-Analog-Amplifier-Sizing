@@ -17,7 +17,7 @@
          |
         GND
 
-    M4 (diode-connected NFET) ← BIAS_REF, mirrors to M3
+    M4 (diode-connected NFET) ← BIAS_GEN, mirrors to M3
 
 Nodes:
   vout   (output)  : drain M1, drain M5
@@ -33,7 +33,7 @@ Nodes:
 | LOAD | M5 | vout (output) | Mirror follower load |
 | LOAD | M6 | net1 (mirror) | Diode-connected mirror reference |
 | TAIL | M3 | net2 (tail) | Tail current source |
-| BIAS_REF | M4 | net3 (bias) | Diode-connected bias reference |
+| BIAS_GEN | M4 | net3 (bias) | Diode-connected bias reference |
 
 Matching: M1 ≡ M2 (same W, L, M), M5 ≡ M6 (same W, L, M).
 M3/M4 share L; mirror ratio set by finger count (M3_M / M4_M).
@@ -101,7 +101,7 @@ intrinsic gain of the cascode device), raising A0 by the same factor.
 ### Sub-Block Abstraction for the TAIL
 
 Parallel structure to LOAD. The TAIL role (M3) is the mirror of the
-diode-connected BIAS_REF (M4); `ID3 = I_tail = (M3_M/M4_M)·I_bias`.
+diode-connected BIAS_GEN (M4); `ID3 = I_tail = (M3_M/M4_M)·I_bias`.
 
 The sub-block type (detected during circuit-understanding) selects both
 the equivalent output conductance seen by the diff-pair source (net2)
