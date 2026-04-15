@@ -48,7 +48,7 @@ class SimulationAPI:
         self.base_config_path: Path = (
             (PROJECT_ROOT / base_config_path)
             if base_config_path
-            else (PROJECT_ROOT / "config/skywater/opamp/tsm.toml")
+            else (PROJECT_ROOT / "config/skywater/opamp/5tota_single.toml")
         )
         base_config = load_toml(self.base_config_path)
         circuit_type = base_config["type"]["name"]

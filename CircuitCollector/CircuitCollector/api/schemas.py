@@ -17,7 +17,7 @@ class SimRequest(BaseModel):
         "json_schema_extra": {
             "example": {
                 "params": {"M1_L": 0.15, "M1_WL_ratio": 3.7, "M1_M": 350},
-                "base_config_path": "config/skywater/opamp/tsm.toml",
+                "base_config_path": "config/skywater/opamp/5tota_single.toml",
                 "output_dir": "output/opamp/tsm",
                 "spec_list": ["dcgain_", "gain_bandwidth_product_", "phase_margin"]
             }
