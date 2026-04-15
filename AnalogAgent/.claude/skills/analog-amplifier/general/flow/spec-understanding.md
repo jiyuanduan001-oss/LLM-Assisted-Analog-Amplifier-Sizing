@@ -6,7 +6,7 @@ Read and validate the user's design spec form. This is the first stage in
 the pipeline — it converts a filled-in spec form into a verified design
 objective.
 
-The spec form template is at `general/spec-form-template.md`. The user
+The spec form template is at `spec-form-template.md` (in the AnalogAgent root). The user
 fills in the fields and provides the completed form as input (either as
 a file or inline in the prompt).
 

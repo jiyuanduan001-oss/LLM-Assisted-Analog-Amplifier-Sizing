@@ -21,7 +21,7 @@ description: >
 
 ```
 general/
-  spec-form-template.md              Reusable spec input form
+  (spec-form-template.md lives in AnalogAgent root directory)
   flow/
     spec-understanding.md            Validate spec form
     circuit-understanding.md         Identify topology, route to design flow

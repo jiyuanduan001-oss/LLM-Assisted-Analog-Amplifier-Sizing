@@ -3,7 +3,7 @@
    Empty string when no extra ports are configured, preserving the
    previous instance-line layout exactly. #}
 {% if extra_ports %}{% set extra_ports_str = ' ' + extra_ports.keys()|join(' ') %}{% else %}{% set extra_ports_str = '' %}{% endif %}
-Ib Ib vss DC='Ib'
+Ib Ib vss DC='IBIAS'
 x1 vss vdd opout_dc opin opout Ib{{extra_ports_str}} {{netlist_name}}
 Cload1 opout 0 'PARAM_CLOAD'
 
@@ -11,30 +11,30 @@ Cload1 opout 0 'PARAM_CLOAD'
 vcmdc cm0 0 'supply_voltage*VCM_ratio'
 vcmac1 cm1 cm0 0 ac=1
 vcmac2 cm2 cm3 0 ac=1
-Ib2 Ib2 vss DC='Ib'
+Ib2 Ib2 vss DC='IBIAS'
 x2 vss vdd cm2 cm1 cm3 Ib2{{extra_ports_str}} {{netlist_name}}
 Cload2 cm3 0 'PARAM_CLOAD'
 
 * PSRR   TB
 VGNDApsrr gndpsrr 0 0 AC=1
 VVDDApsrr vddpsrr 0 'supply_voltage'  AC=1
-Ib3 Ib3 vss DC='Ib'
+Ib3 Ib3 vss DC='IBIAS'
 x3 vss vddpsrr ppsr1 opin ppsr1 Ib3{{extra_ports_str}} {{netlist_name}}
 Cload3 ppsr1 0 'PARAM_CLOAD'
 
-Ib4 Ib4 vss DC='Ib'
+Ib4 Ib4 vss DC='IBIAS'
 x4 gndpsrr vdd npsr1 opin npsr1 Ib4{{extra_ports_str}} {{netlist_name}}
 Cload4 npsr1 0 'PARAM_CLOAD'
 
 * DC ALL  TB
 VVDDdc VDDdc 0 'supply_voltage'
-Ib5 Ib5 vss DC='Ib'
+Ib5 Ib5 vss DC='IBIAS'
 x5 vss vdddc vout6 opin vout6 Ib5{{extra_ports_str}} {{netlist_name}}
 Cload5 vout6 0 'PARAM_CLOAD'
 
 {% if measure_slew_rate %}
 * Slew Rate  TB  (unity-gain feedback with pulse input)
-Ib6 Ib6 vss DC='Ib'
+Ib6 Ib6 vss DC='IBIAS'
 x6 vss vdd srout srin srout Ib6{{extra_ports_str}} {{netlist_name}}
 Cload6 srout 0 'PARAM_CLOAD'
 Vpulse srin 0 PULSE('supply_voltage*VCM_ratio - {{sr_vstep}}/2' 'supply_voltage*VCM_ratio + {{sr_vstep}}/2' {{sr_tdelay}} {{sr_trise}} {{sr_tfall}} {{sr_tpw}} {{sr_tperiod}})
@@ -42,7 +42,7 @@ Vpulse srin 0 PULSE('supply_voltage*VCM_ratio - {{sr_vstep}}/2' 'supply_voltage*
 
 {% if measure_output_swing %}
 * Output Swing  TB  (DC sweep of input around VCM)
-Ib7 Ib7 vss DC='Ib'
+Ib7 Ib7 vss DC='IBIAS'
 x7 vss vdd swout swin swout Ib7{{extra_ports_str}} {{netlist_name}}
 Cload7 swout 0 'PARAM_CLOAD'
 Vswin swin 0 'supply_voltage*VCM_ratio'
@@ -50,7 +50,7 @@ Vswin swin 0 'supply_voltage*VCM_ratio'
 
 {% if measure_noise %}
 * Noise  TB  (dedicated open-loop instance with own AC feedback network)
-Ib8 Ib8 vss DC='Ib'
+Ib8 Ib8 vss DC='IBIAS'
 Vn_indc nsopin 0 'supply_voltage*VCM_ratio'
 Vn_in ns_signal_in 0 dc 'supply_voltage*VCM_ratio' ac 1
 Ln_fb nsopout nsopout_dc 1T
